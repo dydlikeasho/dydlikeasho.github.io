@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#180f33" />
+<title>쇼타로 춤 소환하기 🪄</title>
+
+<!-- ================= Open Graph (X/카톡 공유 카드) ================= -->
+<meta property="og:title" content="쇼타로 춤 소환하기 🪄" />
+<meta property="og:description" content="이모지를 섞어 쇼타로의 춤을 소환하라. 너의 조합은?" />
+<meta property="og:type" content="website" />
+
+<style>
+  :root{
+    --ink:#f4f0ff;
+    --muted:#b9aee6;
+    /* 홀로그램 포일 & 크롬 */
+    --holo:linear-gradient(115deg,#8be9ff,#c9b6ff,#ff9ed8,#ffd6a5,#b6ffd9,#8be9ff);
+    --chrome:linear-gradient(180deg,#ffffff 0%,#dfe5f5 18%,#9aa3ba 46%,#f4f7ff 54%,#aeb7cc 78%,#767e94 100%);
+    --glass:rgba(255,255,255,.06);
+  }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR",sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(60% 45% at 18% 12%, rgba(139,233,255,.30), transparent 62%),
+      radial-gradient(55% 42% at 86% 16%, rgba(255,158,216,.30), transparent 62%),
+      radial-gradient(70% 55% at 50% 108%, rgba(201,182,255,.38), transparent 60%),
+      linear-gradient(160deg,#1a1233 0%,#241a48 55%,#140e2b 100%);
+    overflow:hidden; position:relative;
+    -webkit-user-select:none; user-select:none;
+    touch-action:manipulation;
+  }
+  /* 오일슬릭 홀로그램 헤이즈 */
+  body::before{
+    content:""; position:fixed; inset:-25%; z-index:0; pointer-events:none;
+    background:conic-gradient(from 0deg,
+      rgba(139,233,255,.16),rgba(255,158,216,.16),rgba(255,214,165,.14),
+      rgba(182,255,217,.16),rgba(201,182,255,.16),rgba(139,233,255,.16));
+    filter:blur(70px); opacity:.6; animation:spin 34s linear infinite;
+  }
+  /* 반짝이 */
+  body::after{
+    content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      radial-gradient(1.5px 1.5px at 22% 28%, rgba(255,255,255,.9), transparent),
+      radial-gradient(1.5px 1.5px at 78% 22%, rgba(190,240,255,.9), transparent),
+      radial-gradient(1.5px 1.5px at 62% 82%, rgba(255,200,240,.9), transparent),
+      radial-gradient(1.5px 1.5px at 14% 78%, rgba(255,255,255,.8), transparent);
+    opacity:.7; animation:twinkle 4s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle{from{opacity:.3}to{opacity:.85}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes holo{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+  #app{
+    position:relative; z-index:1;
+    height:100dvh; width:100%; max-width:520px; margin:0 auto;
+    display:flex; flex-direction:column;
+    padding:calc(env(safe-area-inset-top) + 14px) 18px calc(env(safe-area-inset-bottom) + 16px);
+  }
+  .screen{flex:1; display:flex; flex-direction:column; min-height:0;}
+  .hidden{display:none !important;}
+
+  /* ---------- Header ---------- */
+  header{text-align:center; margin-bottom:4px;}
+  .kicker{
+    font-size:12px; letter-spacing:.42em; text-transform:uppercase; font-weight:800;
+    background:var(--chrome); -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.4));
+  }
+  h1{
+    margin:5px 0 2px; font-size:clamp(26px,7.4vw,34px); font-weight:900; letter-spacing:-.01em;
+    background:var(--holo); background-size:230% 230%;
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation:holo 6s ease infinite;
+    filter:drop-shadow(0 1px 0 rgba(255,255,255,.45)) drop-shadow(0 3px 16px rgba(201,182,255,.55));
+  }
+  .sub{font-size:13px; color:var(--muted); margin-top:3px;}
+
+  /* ---------- Summon circle ---------- */
+  .circle-wrap{flex:1; display:flex; align-items:center; justify-content:center; min-height:0;}
+  .circle{position:relative; width:min(82vw, 350px); aspect-ratio:1/1;}
+
+  .ring{
+    position:absolute; inset:0; border-radius:50%;
+    background:conic-gradient(from 0deg,#8be9ff,#c9b6ff,#ff9ed8,#ffd6a5,#b6ffd9,#8be9ff);
+    -webkit-mask:radial-gradient(circle, transparent 60%, #000 61%, #000 67%, transparent 68%);
+            mask:radial-gradient(circle, transparent 60%, #000 61%, #000 67%, transparent 68%);
+    animation:spin 16s linear infinite;
+    filter:drop-shadow(0 0 14px rgba(201,182,255,.55)) saturate(1.1);
+  }
+  .ring.chrome{
+    background:conic-gradient(from 90deg,#ffffff,#aeb7cc 20%,#ffffff 40%,#8b93a8 60%,#ffffff 80%,#c7cede);
+    -webkit-mask:radial-gradient(circle, transparent 73%, #000 74%, #000 76%, transparent 77%);
+            mask:radial-gradient(circle, transparent 73%, #000 74%, #000 76%, transparent 77%);
+    animation:spin 24s linear infinite reverse; opacity:.75;
+    filter:drop-shadow(0 0 6px rgba(255,255,255,.5));
+  }
+
+  .core{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:40%; aspect-ratio:1/1; border-radius:50%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+    background:radial-gradient(circle at 38% 30%, rgba(255,255,255,.55), rgba(255,255,255,.08) 42%, rgba(44,28,80,.55) 72%);
+    border:1px solid rgba(255,255,255,.4);
+    box-shadow:inset 0 10px 22px rgba(255,255,255,.28), inset 0 -20px 30px rgba(90,45,165,.5), 0 12px 30px rgba(15,8,40,.55);
+  }
+  .core .picked{font-size:clamp(17px,5.2vw,23px); line-height:1.1; letter-spacing:-1px;
+    max-width:88%; text-align:center; word-break:break-all;}
+  .core .count{font-size:11px; font-weight:700;
+    background:var(--chrome); -webkit-background-clip:text; background-clip:text; color:transparent;}
+
+  .node{
+    position:absolute; transform:translate(-50%,-50%);
+    width:clamp(50px,15vw,62px); height:clamp(50px,15vw,62px); border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:clamp(25px,7.4vw,31px);
+    cursor:pointer; border:2px solid rgba(255,255,255,.55);
+    background:linear-gradient(160deg, rgba(255,255,255,.30), rgba(255,255,255,.05) 42%, rgba(120,85,205,.20)), rgba(22,15,45,.5);
+    backdrop-filter:blur(4px);
+    box-shadow:inset 0 7px 12px rgba(255,255,255,.4), inset 0 -10px 16px rgba(95,50,165,.45), 0 6px 16px rgba(15,8,40,.5);
+    transition:transform .18s ease, box-shadow .2s, border-color .2s;
+  }
+  .node:active{transform:translate(-50%,-50%) scale(.9);}
+  .node.on{
+    border-color:#fff; transform:translate(-50%,-50%) scale(1.13);
+    box-shadow:0 0 0 2px #fff, 0 0 22px rgba(201,182,255,.95), 0 0 44px rgba(255,158,216,.6),
+      inset 0 8px 14px rgba(255,255,255,.55);
+    animation:bob 1.7s ease-in-out infinite;
+  }
+  .node.on::after{
+    content:""; position:absolute; inset:-6px; border-radius:50%; z-index:-1;
+    background:conic-gradient(from 0deg,#8be9ff,#ff9ed8,#ffd6a5,#b6ffd9,#c9b6ff,#8be9ff);
+    filter:blur(3px); animation:spin 3s linear infinite;
+  }
+  @keyframes bob{0%,100%{transform:translate(-50%,-50%) scale(1.12)}50%{transform:translate(-50%,-53%) scale(1.14)}}
+
+  /* ---------- Buttons ---------- */
+  .actions{margin-top:10px; display:flex; flex-direction:column; gap:10px;}
+  .btn{
+    position:relative; appearance:none; border:0; cursor:pointer; overflow:hidden;
+    font-weight:900; font-size:17px; padding:16px; border-radius:18px; letter-spacing:.01em;
+    transition:transform .12s ease, filter .2s, opacity .2s;
+  }
+  .btn:active{transform:scale(.97);}
+  /* 소환하기 = 홀로그램 크롬 */
+  .btn.primary{
+    color:#2a1a4a; text-shadow:0 1px 0 rgba(255,255,255,.55);
+    background:var(--holo); background-size:220% 220%; animation:holo 5s ease infinite;
+    border:1.5px solid rgba(255,255,255,.7);
+    box-shadow:0 10px 28px rgba(160,120,255,.5), inset 0 2px 0 rgba(255,255,255,.8), inset 0 -8px 14px rgba(120,80,190,.4);
+  }
+  .btn.primary::before{ /* gloss */
+    content:""; position:absolute; inset:0 0 50% 0;
+    background:linear-gradient(180deg, rgba(255,255,255,.6), rgba(255,255,255,0));
+    border-radius:18px 18px 40px 40px; pointer-events:none;
+  }
+  .btn.primary::after{ /* shimmer sweep */
+    content:""; position:absolute; top:0; left:-60%; width:45%; height:100%;
+    background:linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent);
+    transform:skewX(-20deg); pointer-events:none; animation:sweep 3.6s ease-in-out infinite;
+  }
+  @keyframes sweep{0%{left:-60%}55%{left:135%}100%{left:135%}}
+  .btn.primary:disabled{filter:grayscale(.55) brightness(.8); opacity:.5; box-shadow:none; cursor:not-allowed; animation:none;}
+  .btn.ghost{
+    background:rgba(255,255,255,.06); color:var(--ink);
+    border:1.5px solid rgba(255,255,255,.4); backdrop-filter:blur(4px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.3);
+  }
+  .btn.x{
+    background:linear-gradient(180deg,#20202a,#0a0a0f); color:#fff;
+    border:1.5px solid rgba(255,255,255,.35);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 8px 22px rgba(0,0,0,.5);
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+
+  /* ---------- Summon overlay ---------- */
+  #overlay{
+    position:fixed; inset:0; z-index:50; display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(circle at 50% 50%, rgba(40,22,90,.65), rgba(8,5,20,.95));
+    backdrop-filter:blur(6px); opacity:0; pointer-events:none; transition:opacity .22s;
+  }
+  #overlay.show{opacity:1; pointer-events:auto;}
+  .rune{position:relative; width:220px; height:220px; display:flex; align-items:center; justify-content:center;}
+  .rune .r{position:absolute; inset:0; border-radius:50%; border:2px solid transparent;}
+  .rune .r1{border-top-color:#8be9ff; border-bottom-color:#ff9ed8; animation:spin .9s linear infinite;}
+  .rune .r2{inset:26px; border-left-color:#c9b6ff; border-right-color:#b6ffd9; animation:spin 1.3s linear infinite reverse;}
+  .rune .r3{inset:52px; border-top-color:#ffffff; animation:spin .6s linear infinite;}
+  .rune .glyph{font-size:58px; animation:pulse .8s ease-in-out infinite; filter:drop-shadow(0 0 22px rgba(201,182,255,.9));}
+  @keyframes pulse{50%{transform:scale(1.25); opacity:.7}}
+  .flash{position:fixed; inset:0; background:#fff; opacity:0; z-index:60; pointer-events:none;}
+  .flash.go{animation:flash .5s ease-out;}
+  @keyframes flash{0%{opacity:0}40%{opacity:.9}100%{opacity:0}}
+  .summon-label{position:absolute; bottom:-44px; width:200%; left:-50%; text-align:center;
+    letter-spacing:.35em; font-size:12px; font-weight:800;
+    background:var(--chrome); -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation:blink 1s steps(3) infinite;}
+  @keyframes blink{50%{opacity:.35}}
+
+  /* ---------- Reveal ---------- */
+  #reveal{align-items:center; text-align:center;}
+  .result-tag{font-size:12px; letter-spacing:.34em; text-transform:uppercase; font-weight:800; margin-top:2px;
+    background:var(--chrome); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .badge-hidden{display:inline-block; font-size:11px; font-weight:900; color:#2a1a4a;
+    background:var(--holo); background-size:200% 200%; animation:holo 4s ease infinite;
+    padding:4px 12px; border-radius:999px; margin:5px 0 2px;
+    box-shadow:0 0 18px rgba(201,182,255,.7), inset 0 1px 0 rgba(255,255,255,.7);}
+  .result-title{font-size:clamp(24px,7vw,33px); font-weight:900; margin:3px 0 2px; line-height:1.12; padding:0 8px;
+    background:var(--holo); background-size:230% 230%; -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation:holo 6s ease infinite; filter:drop-shadow(0 2px 12px rgba(201,182,255,.5));}
+  .result-combo{display:inline-flex; align-items:center; gap:3px;
+    font-size:20px; letter-spacing:2px; margin:3px 0 9px;
+    padding:5px 15px; border-radius:999px;
+    background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.18); backdrop-filter:blur(4px);}
+
+  .video-wrap{
+    flex:0 0 auto; padding:3px; border-radius:26px;
+    background:var(--holo); background-size:220% 220%; animation:holo 6s ease infinite;
+    box-shadow:0 0 46px rgba(201,182,255,.45);
+  }
+  .video-frame{
+    position:relative; width:min(86vw, calc((100dvh - 232px) * 9 / 16));
+    aspect-ratio:9/16; border-radius:23px; overflow:hidden; background:#0c0716;
+  }
+  .video-frame iframe{position:absolute; inset:0; width:100%; height:100%; border:0;}
+  .unmute{position:absolute; inset:0; z-index:3; border:0; cursor:pointer;
+    background:rgba(6,4,16,.14);
+    display:flex; align-items:flex-end; justify-content:center; padding-bottom:18px;}
+  .unmute span{font-size:13px; font-weight:800; color:#2a1a4a; padding:9px 16px; border-radius:999px;
+    background:var(--holo); background-size:200% 200%; animation:holo 4s ease infinite;
+    box-shadow:0 6px 18px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.7);}
+  .placeholder{
+    position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:10px; padding:20px; text-align:center;
+    background:radial-gradient(circle at 50% 32%, rgba(201,182,255,.28), #0c0716 76%);
+  }
+  .placeholder .emoji{font-size:42px;}
+  .placeholder .ph-title{font-weight:900; font-size:15px;
+    background:var(--holo); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .placeholder .ph-note{font-size:11px; color:var(--muted); line-height:1.55;}
+  #reveal .actions{width:100%; margin-top:13px;}
+  .actions.row{flex-direction:row;}
+  .actions.row .btn{flex:1; font-size:16px; padding:15px 12px;}
+  .actions.row .btn.ghost{flex:0 0 40%;}
+
+  .credit{position:fixed; left:15px; bottom:calc(env(safe-area-inset-bottom) + 5px);
+    font-size:10px; letter-spacing:.04em; color:rgba(255,255,255,.3); z-index:45; pointer-events:none;}
+
+  @media (max-height:700px){
+    .sub{display:none;}
+    .circle{width:min(68vw,280px);}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ SUMMON SCREEN ============ -->
+  <section id="summon" class="screen">
+    <header>
+      <div class="kicker">OSAKI SHOTARO</div>
+      <h1>쇼타로 춤 소환하기</h1>
+      <div class="sub">1개부터 5개까지 이모지를 조합해서<br>각각 다른 쇼타로 춤을 소환해보세요!</div>
+    </header>
+
+    <div class="circle-wrap">
+      <div class="circle" id="circle">
+        <div class="ring"></div>
+        <div class="ring chrome"></div>
+        <div class="core" id="core">
+          <div class="picked" id="picked"></div>
+          <div class="count" id="count">이모지를 고르세요</div>
+        </div>
+        <!-- emoji nodes injected by JS -->
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" id="summonBtn" disabled>🪄 소환하기</button>
+    </div>
+  </section>
+
+  <!-- ============ REVEAL SCREEN ============ -->
+  <section id="reveal" class="screen hidden">
+    <header>
+      <div class="result-tag" id="rTag">CHALLENGE SUMMONED</div>
+      <div class="badge-hidden hidden" id="rHidden">✦ 레전드 풀소환 ✦</div>
+      <div class="result-title" id="rTitle"></div>
+      <div class="result-combo" id="rCombo"></div>
+    </header>
+
+    <div class="video-wrap">
+      <div class="video-frame" id="videoFrame"></div>
+    </div>
+
+    <div class="actions row">
+      <button class="btn ghost" id="retryBtn">🔄 다시하기</button>
+      <button class="btn x" id="shareBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.66l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        공유하기
+      </button>
+    </div>
+  </section>
+</div>
+
+<div class="credit">@fitohec</div>
+
+<!-- summon animation overlay -->
+<div id="overlay">
+  <div class="rune">
+    <div class="r r1"></div><div class="r r2"></div><div class="r r3"></div>
+    <div class="glyph" id="glyph">🪄</div>
+    <div class="summon-label">SUMMONING</div>
+  </div>
+</div>
+<div class="flash" id="flash"></div>
+
+<script>
+/* ============================================================
+   ⚙️  CONFIG — 여기만 고치면 됩니다
+   ============================================================
+   1) EMOJIS : 소환진에 놓일 5개 이모지 + 기운(vibe)
+   2) COMBOS : 26개 조합(2~5개) → 각 조합이 소환하는 유튜브 영상 (1:1)
+   3) SPARE  : 남는 예비 영상 (원하는 조합에 바꿔 끼우기)
+
+   👉 youtube 칸에는 영상 ID 또는 유튜브 주소(Shorts/youtu.be)를 넣으면 됩니다.
+   👉 조합(on:[...])은 순서 무관. 비우면 플레이스홀더가 표시됩니다.
+   ============================================================ */
+
+  const EMOJIS = [
+    { id:'fire',   char:'🔥', vibe:'파워'   },
+    { id:'bolt',   char:'🎱', vibe:'에너지' },
+    { id:'water',  char:'🥃', vibe:'그루브' },
+    { id:'moon',   char:'💫', vibe:'감성'   },
+    { id:'flower', char:'🍓', vibe:'큐트'   },
+  ];
+
+  // 31개 조합 1:1 매핑 · song = 결과 화면에 뜨는 챌린지 이름
+  const COMBOS = [
+    // ── 1개 조합 (5) ──
+    { on:['fire'],   song:'Hooligan',      youtube:'nC80Zdrorbk' },
+    { on:['bolt'],   song:'Gila Gila',     youtube:'Qyb99UPU4iU' },
+    { on:['water'],  song:'삐그덕',         youtube:'-jA79Xg8B7k' },
+    { on:['moon'],   song:'404 · New Era', youtube:'CB4y4aYHb54' },
+    { on:['flower'], song:'캐논볼',         youtube:'CSWkyOKh3Gc' },
+    // ── 2개 조합 (10) ──
+    { on:['fire','bolt'],   song:'Do Your Dance',       youtube:'3dyY_gQk5cw' }, // 쿄카×쇼타로
+    { on:['fire','water'],  song:'TOO BAD',             youtube:'oAY_5pejAng' },
+    { on:['fire','moon'],   song:'La Mamá de la Mamá',  youtube:'QFjUi0FBdH4' },
+    { on:['fire','flower'], song:'Shake It To The Max', youtube:'Niken9Z4RFg' },
+    { on:['bolt','water'],  song:'Freestyle',           youtube:'1DjknLePiNw' },
+    { on:['bolt','moon'],   song:'See Sumn',            youtube:'qF3VvQKyCGg' },
+    { on:['bolt','flower'], song:'PONPONPON',           youtube:'pgCT3aHc1fo' },
+    { on:['water','moon'],  song:'Sugar On My Tongue',  youtube:'nJhGA2z3aU4' },
+    { on:['water','flower'],song:'Twins',               youtube:'saQMjvEZY-c' },
+    { on:['moon','flower'], song:'Snooze',              youtube:'73ndUZF_gZI' },
+    // ── 3개 조합 (10) ──
+    { on:['fire','bolt','water'],   song:'Clique',             youtube:'VMv1VYwVGVc' },
+    { on:['fire','bolt','moon'],    song:'Paint The Town Red', youtube:'kQESxHNqNBs' },
+    { on:['fire','bolt','flower'],  song:"Buzzin'",            youtube:'Ad3gkDdQht0' },
+    { on:['fire','water','moon'],   song:'Honest',             youtube:'jAnJixH4BJg' },
+    { on:['fire','water','flower'], song:'Left Right',         youtube:'s7Zcl4YYgQY' },
+    { on:['fire','moon','flower'],  song:'Come Back Home',     youtube:'mztud2Wp5BQ' },
+    { on:['bolt','water','moon'],   song:'Universe',           youtube:'e49u5UcCKB0' },
+    { on:['bolt','water','flower'], song:"That's A No No",     youtube:'icrbLDXGQXc' },
+    { on:['bolt','moon','flower'],  song:'NoNoNo',             youtube:'Hx73tYx5wyI' },
+    { on:['water','moon','flower'], song:'GG EZ',              youtube:'DRs2Rq_14b4' },
+    // ── 4개 조합 (5) ──
+    { on:['fire','bolt','water','moon'],   song:'하이스쿨 뮤지컬',    youtube:'LmZx5Jq9ptc' },
+    { on:['fire','bolt','water','flower'], song:'Sticky',           youtube:'4hx5A7x-p54' },
+    { on:['fire','bolt','moon','flower'],  song:'Got It Like That', youtube:'sVDxoE9goU8' },
+    { on:['fire','water','moon','flower'], song:'No Sense',         youtube:'bQJJkVvDPKw' },
+    { on:['bolt','water','moon','flower'], song:'BMF',              youtube:'99OqFdvOYr8' },
+    // ── 5개 풀조합 (1) ──
+    { on:['fire','bolt','water','moon','flower'], song:'Like JENNIE', youtube:'UxZKtfe3bl4' },
+  ];
+
+/* ==================== 엔진 (건드릴 필요 X) ==================== */
+
+  const EMOJI_BY_ID = Object.fromEntries(EMOJIS.map(e=>[e.id,e]));
+  const $ = s => document.querySelector(s);
+  const state = { selected:new Set() };
+  const MIN_SELECT = 1, MAX_SELECT = 5;   // 1~5개 선택
+
+  // deterministic hash (FNV-1a)
+  function hashStr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+
+  function parseYouTubeId(input){
+    if(!input) return '';
+    const s = String(input).trim();
+    if(/^[\w-]{11}$/.test(s)) return s;                       // raw id
+    const m = s.match(/(?:youtu\.be\/|\/shorts\/|[?&]v=|\/embed\/)([\w-]{11})/);
+    return m ? m[1] : '';
+  }
+
+  // 조합(집합) → 영상.  키는 emoji-id를 정렬해 합친 문자열
+  const COMBO_MAP = Object.fromEntries(COMBOS.map(c=>[[...c.on].sort().join(','), c]));
+  function resolve(ids){
+    const key=[...ids].sort().join(',');
+    const c = COMBO_MAP[key] || COMBOS[hashStr(key)%COMBOS.length]; // 안전장치
+    return { label:c.song, youtube:c.youtube, badge:c.badge||'' };
+  }
+
+  function buildCircle(){
+    const circle=$('#circle');
+    const R=42;
+    EMOJIS.forEach((e,i)=>{
+      const ang=(-90 + i*(360/EMOJIS.length))*Math.PI/180;
+      const node=document.createElement('button');
+      node.className='node'; node.textContent=e.char;
+      node.style.left=(50+R*Math.cos(ang))+'%';
+      node.style.top =(50+R*Math.sin(ang))+'%';
+      node.dataset.id=e.id;
+      node.addEventListener('click',()=>toggle(e.id,node));
+      circle.appendChild(node);
+    });
+  }
+
+  function toggle(id,node){
+    if(state.selected.has(id)){state.selected.delete(id); node.classList.remove('on');}
+    else{
+      if(state.selected.size>=MAX_SELECT){ flashCount(); return; }
+      state.selected.add(id); node.classList.add('on');
+    }
+    syncCore();
+  }
+  function flashCount(){
+    const c=$('#count');
+    c.animate?.([{transform:'scale(1)'},{transform:'scale(1.18)'},{transform:'scale(1)'}],{duration:240});
+  }
+
+  function orderedSelected(){ return EMOJIS.filter(e=>state.selected.has(e.id)); }
+
+  function syncCore(){
+    $('#picked').textContent = orderedSelected().map(e=>e.char).join('');
+    const n=state.selected.size;
+    $('#count').textContent = n===0 ? '이모지를 고르세요'
+                            : n>=MAX_SELECT ? '최대 '+MAX_SELECT+'개 · 소환 준비!'
+                            : n+'개 선택됨';
+    $('#summonBtn').disabled = n<MIN_SELECT;
+  }
+
+  function summon(){
+    if(state.selected.size<MIN_SELECT) return;
+    const overlay=$('#overlay'), flash=$('#flash');
+    $('#glyph').textContent = orderedSelected()[0].char;
+    overlay.classList.add('show');
+    setTimeout(()=>{ flash.classList.add('go'); }, 550);
+    setTimeout(()=>{
+      overlay.classList.remove('show');
+      flash.classList.remove('go');
+      showReveal();
+    }, 1000);
+  }
+
+  function showReveal(){
+    const ids=[...state.selected];
+    const res=resolve(ids);
+
+    $('#rTitle').textContent=res.label;
+    $('#rCombo').textContent=orderedSelected().map(e=>e.char).join(' ');
+    $('#rHidden').textContent=res.badge;
+    $('#rHidden').classList.toggle('hidden', !res.badge);
+
+    const vid=parseYouTubeId(res.youtube);
+    const frame=$('#videoFrame');
+    if(vid){
+      // 음소거 자동재생(항상 허용됨) → 화면이 반드시 뜸. 탭하면 소리 켜짐.
+      const src=`https://www.youtube.com/embed/${vid}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&loop=1&playlist=${vid}&enablejsapi=1`;
+      frame.innerHTML=`<iframe id="ytFrame" src="${src}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>
+        <button class="unmute" id="unmuteBtn"><span>🔊 탭하여 소리 켜기</span></button>`;
+      const btn=$('#unmuteBtn');
+      btn.addEventListener('click',()=>{
+        const f=$('#ytFrame');
+        try{
+          f.contentWindow.postMessage('{"event":"command","func":"unMute","args":[]}','*');
+          f.contentWindow.postMessage('{"event":"command","func":"playVideo","args":[]}','*');
+        }catch(e){}
+        btn.remove();
+      });
+    }else{
+      frame.innerHTML=`<div class="placeholder">
+        <div class="emoji">${orderedSelected().map(e=>e.char).join('')}</div>
+        <div class="ph-title">${res.label}</div>
+        <div class="ph-note">여기에 쇼타로 춤 릴스가 자동재생됩니다.<br>CONFIG에 유튜브 링크를 넣어주세요 🪄</div>
+      </div>`;
+    }
+
+    state.lastShare = {
+      combo: orderedSelected().map(e=>e.char).join(''),
+      label: res.label,
+      url: location.origin+location.pathname+'?s='+ids.slice().sort().join(',')
+    };
+
+    $('#summon').classList.add('hidden');
+    $('#reveal').classList.remove('hidden');
+  }
+
+  function retry(){
+    $('#videoFrame').innerHTML='';
+    $('#reveal').classList.add('hidden');
+    $('#summon').classList.remove('hidden');
+    // 선택 유지 → 살짝 바꿔 다시 소환하기 좋게. 초기화하려면 아래 주석 해제
+    // state.selected.clear(); document.querySelectorAll('.node.on').forEach(n=>n.classList.remove('on')); syncCore();
+  }
+
+  function share(){
+    const s=state.lastShare; if(!s) return;
+    const text=`${s.combo} 조합으로 '${s.label}' 소환! 🪄\n쇼타로 춤 소환하기에서 너의 조합도 뽑아봐 👇`;
+    const url=`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(s.url)}&hashtags=쇼타로,춤소환진`;
+    window.open(url,'_blank','noopener');
+  }
+
+  function applyUrlPreset(){
+    const p=new URLSearchParams(location.search).get('s');
+    if(!p) return;
+    const ids=p.split(',').filter(id=>EMOJI_BY_ID[id]).slice(0,MAX_SELECT);
+    if(ids.length<MIN_SELECT) return;
+    state.selected=new Set(ids);
+    document.querySelectorAll('.node').forEach(n=>{ if(state.selected.has(n.dataset.id)) n.classList.add('on'); });
+    syncCore();
+  }
+
+  buildCircle();
+  syncCore();
+  $('#summonBtn').addEventListener('click',summon);
+  $('#retryBtn').addEventListener('click',retry);
+  $('#shareBtn').addEventListener('click',share);
+  applyUrlPreset();
+</script>
+</body>
+</html>
