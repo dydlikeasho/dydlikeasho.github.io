@@ -11,11 +11,11 @@
 <meta property="og:description" content="이모지 골라서 나의 쇼타로 춤 추천받기 · OSAKI SHOTARO SUMMON" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://dydlikeasho.github.io/" />
-<meta property="og:image" content="https://dydlikeasho.github.io/og-image.jpg?v=3" />
+<meta property="og:image" content="https://dydlikeasho.github.io/og-image.jpg?v=4" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="우리 팀에 쇼타로 있다 🫳" />
 <meta name="twitter:description" content="이모지 골라서 나의 쇼타로 춤 추천받기" />
-<meta name="twitter:image" content="https://dydlikeasho.github.io/og-image.jpg?v=3" />
+<meta name="twitter:image" content="https://dydlikeasho.github.io/og-image.jpg?v=4" />
 
 <!-- Mona12 픽셀 폰트 (텍스트 + 픽셀 컬러 이모지) -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -84,16 +84,17 @@
 
   .keyboard{width:100%; max-width:440px; margin:0 auto;}
   .krow{display:flex; gap:8px; justify-content:center;}
-  .key{font-family:var(--font); cursor:pointer; color:var(--grn); background:#06210f;
-    border:1.5px solid var(--grn2); border-bottom-width:4px; border-radius:9px;
-    box-shadow:0 2px 0 rgba(0,0,0,.4); transition:transform .06s, box-shadow .1s, background .12s, border-color .12s;}
+  .key{font-family:var(--font); cursor:pointer; color:var(--grn); background:#080f0b;
+    border:2px solid #26402f; border-bottom-width:4px; border-radius:9px;
+    box-shadow:0 2px 0 rgba(0,0,0,.4); transition:transform .08s, box-shadow .12s, background .14s, border-color .14s, opacity .14s, filter .14s;}
   .ekey{flex:1; max-width:66px; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center;
-    font-size:clamp(24px,7vw,30px);}
-  .key:active{transform:translateY(2px); border-bottom-width:1.5px;}
-  .ekey.on{background:#0c3a1c; border-color:var(--grn); box-shadow:0 0 16px rgba(61,255,122,.6);
-    transform:translateY(2px); border-bottom-width:1.5px;}
+    font-size:clamp(24px,7vw,30px); opacity:.42; filter:grayscale(.6) brightness(.85);}
+  .key:active{transform:translateY(2px); border-bottom-width:2px;}
+  .ekey.on{opacity:1; filter:none; background:#0e4a24; border-color:var(--grn);
+    box-shadow:0 0 20px rgba(61,255,122,.8), inset 0 0 14px rgba(61,255,122,.3);
+    transform:translateY(2px); border-bottom-width:2px;}
   .enter{width:100%; margin-top:12px; padding:15px; font-size:16px; color:var(--grn);
-    text-shadow:0 0 8px rgba(61,255,122,.45);}
+    border-color:var(--grn2); text-shadow:0 0 8px rgba(61,255,122,.45);}
   .enter:disabled{opacity:.4; border-color:var(--grndim); color:var(--grndim); box-shadow:none; cursor:not-allowed;}
 
   /* ---- 결과 ---- */
@@ -378,8 +379,10 @@
     state.lastShare = { combo:chars.join(''), label:res.label, num:res.num, url:SITE+'?s='+res.key };
     $('#summon').classList.add('hidden'); $('#dex').classList.add('hidden');
     $('#reveal').classList.remove('hidden');
+    credit(false);   // 결과 화면에선 @fitohec 숨김 (버튼과 겹침)
   }
-  function retry(){ destroyPlayer(); $('#videoFrame').innerHTML=''; $('#reveal').classList.add('hidden'); $('#summon').classList.remove('hidden'); syncTerm(); }
+  function credit(v){ const c=document.querySelector('.credit'); if(c) c.style.display=v?'':'none'; }
+  function retry(){ destroyPlayer(); $('#videoFrame').innerHTML=''; $('#reveal').classList.add('hidden'); $('#summon').classList.remove('hidden'); credit(true); syncTerm(); }
 
   /* ---- 유튜브 (IFrame API · 로딩 후 1탭에 소리+제목숨김) ---- */
   let ytReady=false, player=null, pendingVid=null;
@@ -394,25 +397,16 @@
   }
   function makePlayer(vid){
     player=new YT.Player('ytHost',{ videoId:vid,
-      playerVars:{autoplay:1,mute:1,controls:0,playsinline:1,loop:1,playlist:vid,rel:0,modestbranding:1,fs:0,iv_load_policy:3,disablekb:1},
+      playerVars:{autoplay:1,mute:1,controls:1,playsinline:1,loop:1,playlist:vid,rel:0,modestbranding:1,fs:1,iv_load_policy:3,disablekb:1},
       events:{ onReady:onPlayerReady } });
   }
   function onPlayerReady(e){
     try{ e.target.mute(); e.target.playVideo(); }catch(err){}
     const btn=$('#unmuteBtn'); if(!btn) return;
     btn.classList.remove('loading');
-    const span=btn.querySelector('span');
-    span.textContent='🔊 탭하여 소리 켜기';
-    let stage=1;
-    btn.onclick=()=>{
-      if(stage===1){
-        try{ e.target.unMute(); e.target.setVolume(100); e.target.playVideo(); }catch(err){}
-        span.textContent='👆 한 번 더 탭해서 깨끗하게 보기';
-        stage=2;
-      }else{
-        span.style.display='none'; btn.classList.add('gone'); stage=3;
-      }
-    };
+    btn.querySelector('span').textContent='🔊 탭하여 소리 켜기';
+    // 탭 1번: 소리 켜고 오버레이 제거 → 이후 화면 탭은 유튜브가 직접 받아 UI 숨김/전체화면 가능
+    btn.onclick=()=>{ try{ e.target.unMute(); e.target.setVolume(100); e.target.playVideo(); }catch(err){} btn.remove(); };
   }
 
   /* ---- 도감 ---- */
@@ -427,7 +421,7 @@
       if(got){
         const vid=parseYouTubeId(c.youtube);
         cell.innerHTML=`<div class="dexnum">#${num}</div>
-          <div class="dexthumb">${vid?`<img loading="lazy" src="https://i.ytimg.com/vi/${vid}/oar2.jpg" onerror="this.onerror=null;this.src='https://i.ytimg.com/vi/${vid}/hqdefault.jpg'" alt="">`:''}</div>
+          <div class="dexthumb">${vid?`<img loading="lazy" src="https://i.ytimg.com/vi/${vid}/oar2.jpg" onload="if(this.naturalWidth<=120&&!this.dataset.f){this.dataset.f=1;this.src='https://i.ytimg.com/vi/${vid}/hqdefault.jpg'}" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://i.ytimg.com/vi/${vid}/hqdefault.jpg'}" alt="">`:''}</div>
           <div class="dexcap"><div class="dexname">${c.song}</div><div class="dexemoji">${c.on.map(id=>EMOJI_BY_ID[id].char).join('')}</div></div>`;
         cell.addEventListener('click',()=>openResult(c));
       }else{
@@ -442,9 +436,10 @@
     destroyPlayer(); $('#videoFrame').innerHTML='';   // 도감 들어가면 영상 정지
     buildDex();
     $('#summon').classList.add('hidden'); $('#reveal').classList.add('hidden'); $('#dex').classList.remove('hidden');
+    credit(true);
     if(loadDex().size>=COMBOS.length) confetti();
   }
-  function closeDex(){ destroyPlayer(); $('#dex').classList.add('hidden'); $('#reveal').classList.add('hidden'); $('#summon').classList.remove('hidden'); syncTerm(); }
+  function closeDex(){ destroyPlayer(); $('#dex').classList.add('hidden'); $('#reveal').classList.add('hidden'); $('#summon').classList.remove('hidden'); credit(true); syncTerm(); }
 
   /* ---- 컨페티 (도감 완성) ---- */
   function confetti(){
@@ -465,7 +460,8 @@
   /* ---- X 공유 (문구 프리필) ---- */
   function share(){
     const s=state.lastShare; if(!s) return;
-    const text=`우리 팀에 쇼타로 있다 🫳\n\n${s.combo} → ${s.label}\n이모지 골라서 나의 쇼타로 춤 추천받기 👇\n${s.url}`;
+    const n=loadDex().size, t=COMBOS.length;
+    const text=`우리 팀에 쇼타로 있다🫳\n챌린지 도감 (${n}/${t})개 완성!\n\n이모지 넣고 쇼타로 춤 릴스 모으기 👇\n${SITE}`;
     window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(text),'_blank','noopener');
   }
 
