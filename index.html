@@ -8,14 +8,14 @@
 
 <!-- 공유 카드 -->
 <meta property="og:title" content="우리 팀에 쇼타로 있다 🫳" />
-<meta property="og:description" content="이모지 골라서 나의 쇼타로 춤 추천받기 · OSAKI SHOTARO SUMMON" />
+<meta property="og:description" content="챌린지 도감 완성하기 · 이모지 넣고 쇼타로 춤 릴스 모으기" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://dydlikeasho.github.io/" />
-<meta property="og:image" content="https://dydlikeasho.github.io/og-image.jpg?v=4" />
+<meta property="og:image" content="https://dydlikeasho.github.io/og-image.jpg?v=5" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="우리 팀에 쇼타로 있다 🫳" />
-<meta name="twitter:description" content="이모지 골라서 나의 쇼타로 춤 추천받기" />
-<meta name="twitter:image" content="https://dydlikeasho.github.io/og-image.jpg?v=4" />
+<meta name="twitter:description" content="챌린지 도감 완성하기 · 이모지 넣고 쇼타로 춤 릴스 모으기" />
+<meta name="twitter:image" content="https://dydlikeasho.github.io/og-image.jpg?v=5" />
 
 <!-- Mona12 픽셀 폰트 (텍스트 + 픽셀 컬러 이모지) -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -461,7 +461,8 @@
   function share(){
     const s=state.lastShare; if(!s) return;
     const n=loadDex().size, t=COMBOS.length;
-    const text=`우리 팀에 쇼타로 있다🫳\n챌린지 도감 (${n}/${t})개 완성!\n\n이모지 넣고 쇼타로 춤 릴스 모으기 👇\n${SITE}`;
+    const line = n>=t ? `챌린지 도감 (${n}/${t})개 완성! 다 모았어요 💘` : `챌린지 도감 (${n}/${t})개 완성!`;
+    const text=`우리 팀에 쇼타로 있다🫳\n${line}\n\n이모지 넣고 쇼타로 춤 릴스 모으기 👇\n${SITE}`;
     window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(text),'_blank','noopener');
   }
 
