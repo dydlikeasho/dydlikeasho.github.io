@@ -43,7 +43,7 @@
   @keyframes blink{50%{opacity:0}}
   @keyframes pulse{50%{transform:scale(1.2);opacity:.7}}
   @keyframes fill{to{width:100%}}
-  .emoji,.ekey,#termInput,.result-combo,.dexemoji,.result-tag{font-family:var(--emoji);}
+  .emoji,.ekey,#termInput,.result-combo,.dexemoji{font-family:var(--emoji);}
 
   #app{position:relative; z-index:1; height:100dvh; width:100%; max-width:520px; margin:0 auto;
     display:flex; flex-direction:column;
@@ -140,22 +140,22 @@
   #dex{min-height:0;}
   #dex .sub b{color:var(--grn); text-shadow:0 0 8px rgba(61,255,122,.5);}
   #dex .sub{font-size:12px; color:var(--muted); margin-top:4px;}
-  .dexgrid{flex:1; overflow-y:auto; display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+  .dexgrid{flex:1; overflow-y:auto; display:grid; grid-template-columns:repeat(3,1fr); grid-auto-rows:200px; gap:15px;
     padding:12px 2px; align-content:start; -webkit-overflow-scrolling:touch;}
-  .dexcell{position:relative; aspect-ratio:1/1.34; display:flex; flex-direction:column;
-    border:1px solid var(--grndim); border-radius:9px; background:#04120a; overflow:hidden;}
+  .dexcell{position:relative; border:1px solid var(--grndim); border-radius:9px; background:#04120a; overflow:hidden;}
   .dexcell.got{border-color:var(--grn); box-shadow:0 0 10px rgba(61,255,122,.22); cursor:pointer;}
   .dexcell.got:active{transform:scale(.97);}
-  .dexthumb{flex:1; min-height:0; width:100%; background:#000; position:relative;}
-  .dexthumb img{width:100%; height:100%; object-fit:cover; display:block;}
-  .dexlock{flex:1; display:flex; align-items:center; justify-content:center;
-    font-size:46px; color:rgba(61,255,122,.42); text-shadow:0 0 14px rgba(61,255,122,.3);}
+  .dexthumb{position:absolute; inset:0; background:#000;}
+  .dexthumb img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block;}
+  .dexlock{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:44px; color:rgba(61,255,122,.42); text-shadow:0 0 14px rgba(61,255,122,.3);}
   .dexnum{position:absolute; top:5px; left:5px; font-size:9px; color:var(--grn); z-index:2;
-    background:rgba(0,0,0,.55); padding:1px 5px; border-radius:4px;}
-  .dexcap{flex:0 0 auto; padding:4px 4px 6px; text-align:center;}
-  .dexname{font-size:9.5px; color:var(--ink); line-height:1.2; word-break:break-word;
+    background:rgba(0,0,0,.6); padding:1px 5px; border-radius:4px;}
+  .dexcap{position:absolute; left:0; right:0; bottom:0; z-index:2; padding:16px 5px 6px; text-align:center;
+    background:linear-gradient(180deg, transparent, rgba(0,0,0,.92));}
+  .dexname{font-size:9.5px; color:#fff; line-height:1.2; word-break:break-word;
     display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
-  .dexemoji{font-size:12px; margin-top:2px; letter-spacing:-1px;}
+  .dexemoji{font-size:11px; margin-top:1px; letter-spacing:-1px;}
   .dexfoot{flex:0 0 auto; text-align:center; font-size:10px; color:var(--muted); padding:9px 0 2px;}
 
   /* ---- 소환 오버레이 ---- */
@@ -166,7 +166,7 @@
   .rune .glyph{font-size:56px; font-family:var(--emoji); filter:drop-shadow(0 0 16px rgba(61,255,122,.75)); animation:pulse .8s ease-in-out infinite;}
   .rune .load{color:var(--grn); letter-spacing:.2em; font-size:15px; text-shadow:0 0 10px rgba(61,255,122,.7);}
   .rune .bar{width:190px; height:9px; border:1px solid var(--grndim); border-radius:2px; overflow:hidden;}
-  .rune .bar i{display:block; height:100%; width:0; background:var(--grn); box-shadow:0 0 10px var(--grn); animation:fill 1s linear forwards;}
+  .rune .bar i{display:block; height:100%; width:0; background:var(--grn); box-shadow:0 0 10px var(--grn); animation:fill .62s linear forwards;}
   .flash{position:fixed; inset:0; background:var(--grn); opacity:0; z-index:60; pointer-events:none;}
   .flash.go{animation:flash .5s ease-out;}
   @keyframes flash{0%{opacity:0}40%{opacity:.45}100%{opacity:0}}
@@ -195,10 +195,10 @@
       <div class="monitor">
         <div class="term-win">
           <div class="term-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span>
-            <span class="term-title">summon.sh — osaki</span></div>
+            <span class="term-title">dydlikeasho</span></div>
           <div class="term-body">
-            <div class="tline dim">osaki@shotaro ~ %</div>
-            <div class="tline">$ ./summon.sh</div>
+            <div class="tline dim">osaki_shotaro_do_your_dance</div>
+            <div class="tline">$ ./summon.sho</div>
             <div class="tline">&nbsp;</div>
             <div class="tline cmt"># How to use</div>
             <div class="tline">1. 이모지를 입력해주세요.</div>
@@ -362,8 +362,8 @@
     const bar=overlay.querySelector('.bar i');
     if(bar){ bar.style.animation='none'; void bar.offsetWidth; bar.style.animation=''; }
     overlay.classList.add('show');
-    setTimeout(()=>{ flash.classList.add('go'); }, 650);
-    setTimeout(()=>{ overlay.classList.remove('show'); flash.classList.remove('go'); showReveal(); }, 1000);
+    setTimeout(()=>{ flash.classList.add('go'); }, 380);
+    setTimeout(()=>{ overlay.classList.remove('show'); flash.classList.remove('go'); showReveal(); }, 640);
   }
 
   function showReveal(){
@@ -417,7 +417,7 @@
       if(got){
         const vid=parseYouTubeId(c.youtube);
         cell.innerHTML=`<div class="dexnum">#${num}</div>
-          <div class="dexthumb">${vid?`<img loading="lazy" src="https://i.ytimg.com/vi/${vid}/mqdefault.jpg" alt="">`:''}</div>
+          <div class="dexthumb">${vid?`<img loading="lazy" src="https://i.ytimg.com/vi/${vid}/oar2.jpg" onerror="this.onerror=null;this.src='https://i.ytimg.com/vi/${vid}/mqdefault.jpg'" alt="">`:''}</div>
           <div class="dexcap"><div class="dexname">${c.song}</div><div class="dexemoji">${c.on.map(id=>EMOJI_BY_ID[id].char).join('')}</div></div>`;
         cell.addEventListener('click',()=>openResult(c));
       }else{
