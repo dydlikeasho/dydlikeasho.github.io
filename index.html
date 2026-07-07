@@ -392,7 +392,7 @@
   function mountVideo(vid,label,comboStr){
     const frame=$('#videoFrame');
     if(!vid){ frame.innerHTML=`<div class="placeholder"><div class="emoji">${comboStr}</div><div>${label}<br>유튜브 링크를 넣어주세요</div></div>`; return; }
-    const src=`https://www.youtube.com/embed/${vid}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&loop=1&playlist=${vid}&enablejsapi=1&controls=1&fs=1&iv_load_policy=3`;
+    const src=`https://www.youtube.com/embed/${vid}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&loop=1&playlist=${vid}&enablejsapi=1&controls=0&fs=0&iv_load_policy=3&disablekb=1`;
     frame.innerHTML=`<iframe id="ytFrame" src="${src}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>
       <button class="unmute" id="unmuteBtn"><span>🔊 탭하여 소리 켜기</span></button>`;
     const btn=$('#unmuteBtn'), f=$('#ytFrame');
@@ -454,7 +454,7 @@
     const s=state.lastShare; if(!s) return;
     const n=loadDex().size, t=COMBOS.length;
     const line = n>=t ? `챌린지 도감 (${n}/${t})개 완성! 다 모았어요 💘` : `챌린지 도감 (${n}/${t})개 완성!`;
-    const text=`우리 팀에 쇼타로 있다🫳\n${line}\n\n이모지 넣고 쇼타로 춤 릴스 모으기 👇\n${SITE}`;
+    const text=`우리 팀에 쇼타로 있다🫳\n${line}\n\n이모지 넣고 쇼타로 춤 릴스 모으기 👇\n${s.url}`;
     window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(text),'_blank','noopener');
   }
 
