@@ -278,7 +278,7 @@
     { id:'flower', char:'🍓' },
   ];
   const COMBOS = [
-    { on:['fire'],   song:'Hooligan',      youtube:'nC80Zdrorbk' },
+    { on:['fire'],   song:'UNTOUCHABLE',   youtube:'7uz_mY6X0Og' },
     { on:['bolt'],   song:'Gila Gila',     youtube:'Qyb99UPU4iU' },
     { on:['water'],  song:'삐그덕 (Walk)',   youtube:'-jA79Xg8B7k' },
     { on:['moon'],   song:'404 · New Era', youtube:'CB4y4aYHb54' },
@@ -387,29 +387,18 @@
   function credit(v){ const c=document.querySelector('.credit'); if(c) c.style.display=v?'':'none'; }
   function retry(){ destroyPlayer(); $('#videoFrame').innerHTML=''; $('#reveal').classList.add('hidden'); $('#summon').classList.remove('hidden'); credit(true); syncTerm(); }
 
-  /* ---- 유튜브 (IFrame API · 로딩 후 1탭에 소리+제목숨김) ---- */
-  let ytReady=false, player=null, pendingVid=null;
-  window.onYouTubeIframeAPIReady=function(){ ytReady=true; if(pendingVid){ makePlayer(pendingVid); pendingVid=null; } };
-  function destroyPlayer(){ if(player){ try{player.destroy();}catch(e){} player=null; } pendingVid=null; }
+  /* ---- 유튜브 (URL 자동재생이 가장 확실 · 음소거 자동재생 → 탭 1번에 소리) ---- */
+  function destroyPlayer(){ $('#videoFrame').innerHTML=''; }
   function mountVideo(vid,label,comboStr){
-    destroyPlayer();
     const frame=$('#videoFrame');
     if(!vid){ frame.innerHTML=`<div class="placeholder"><div class="emoji">${comboStr}</div><div>${label}<br>유튜브 링크를 넣어주세요</div></div>`; return; }
-    frame.innerHTML=`<div id="ytHost"></div><button class="unmute loading" id="unmuteBtn"><span>로딩 중…</span></button>`;
-    if(ytReady) makePlayer(vid); else pendingVid=vid;
-  }
-  function makePlayer(vid){
-    player=new YT.Player('ytHost',{ videoId:vid,
-      playerVars:{autoplay:1,mute:1,controls:1,playsinline:1,loop:1,playlist:vid,rel:0,modestbranding:1,fs:1,iv_load_policy:3,disablekb:1},
-      events:{ onReady:onPlayerReady } });
-  }
-  function onPlayerReady(e){
-    try{ e.target.mute(); e.target.playVideo(); }catch(err){}
-    const btn=$('#unmuteBtn'); if(!btn) return;
-    btn.classList.remove('loading');
-    btn.querySelector('span').textContent='🔊 탭하여 소리 켜기';
-    // 탭 1번: 소리 켜고 오버레이 제거 → 이후 화면 탭은 유튜브가 직접 받아 UI 숨김/전체화면 가능
-    btn.onclick=()=>{ try{ e.target.unMute(); e.target.setVolume(100); e.target.playVideo(); }catch(err){} btn.remove(); };
+    const src=`https://www.youtube.com/embed/${vid}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&loop=1&playlist=${vid}&enablejsapi=1&controls=1&fs=1&iv_load_policy=3`;
+    frame.innerHTML=`<iframe id="ytFrame" src="${src}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>
+      <button class="unmute" id="unmuteBtn"><span>🔊 탭하여 소리 켜기</span></button>`;
+    const btn=$('#unmuteBtn'), f=$('#ytFrame');
+    const cmd=(fn)=>{ try{ f.contentWindow.postMessage(JSON.stringify({event:'command',func:fn,args:[]}),'*'); }catch(e){} };
+    // 탭 1번: 소리 켜고(재시도로 확실히) 오버레이 제거 → 이후 화면 탭은 유튜브가 직접 받아 UI 숨김/전체화면
+    btn.onclick=()=>{ cmd('unMute'); cmd('playVideo'); setTimeout(()=>{cmd('unMute'); cmd('playVideo');},250); btn.remove(); };
   }
 
   /* ---- 도감 ---- */
@@ -488,6 +477,5 @@
   $('#closeDex').addEventListener('click',closeDex);
   applyUrlPreset();
 </script>
-<script src="https://www.youtube.com/iframe_api"></script>
 </body>
 </html>
