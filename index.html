@@ -472,18 +472,33 @@
     try{
       if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
       if(actx.state==='suspended') actx.resume();
-      const t=actx.currentTime, sr=actx.sampleRate, n=(sr*0.045)|0;
-      const buf=actx.createBuffer(1,n,sr), d=buf.getChannelData(0);
-      for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3.5);   // 짧게 감쇠하는 노이즈 = 키 눌림
-      const src=actx.createBufferSource(); src.buffer=buf;
-      const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=1300+Math.random()*400; lp.Q.value=0.6;
-      const g=actx.createGain(); g.gain.value=0.14;
-      src.connect(lp).connect(g).connect(actx.destination);
-      const osc=actx.createOscillator(); osc.type='triangle';   // 저음 '톡' 바디
-      const f=150+Math.random()*40; osc.frequency.setValueAtTime(f,t); osc.frequency.exponentialRampToValueAtTime(f*0.55,t+0.05);
-      const og=actx.createGain(); og.gain.setValueAtTime(0.11,t); og.gain.exponentialRampToValueAtTime(0.0008,t+0.055);
-      osc.connect(og).connect(actx.destination);
-      src.start(t); osc.start(t); osc.stop(t+0.06);
+      const t=actx.currentTime, sr=actx.sampleRate;
+      const master=actx.createGain(); master.gain.value=0.95; master.connect(actx.destination);
+      // (1) 스템 클릭: 짧고 부드러운 노이즈(로우패스) — 상단 '독'
+      const cn=(sr*0.022)|0, cbuf=actx.createBuffer(1,cn,sr), cd=cbuf.getChannelData(0);
+      for(let i=0;i<cn;i++) cd[i]=(Math.random()*2-1)*Math.pow(1-i/cn,4);
+      const csrc=actx.createBufferSource(); csrc.buffer=cbuf;
+      const clp=actx.createBiquadFilter(); clp.type='lowpass'; clp.frequency.value=950+Math.random()*350; clp.Q.value=0.5;
+      const cg=actx.createGain(); cg.gain.value=0.075;
+      csrc.connect(clp).connect(cg).connect(master); csrc.start(t);
+      // (2) 도독 바디: 깊은 저음 두 파트(빠른 어택→감쇠) — 몽돌/조약돌 특유 thock
+      const f0=118+Math.random()*24;
+      const b1=actx.createOscillator(); b1.type='triangle';
+      b1.frequency.setValueAtTime(f0*1.7,t); b1.frequency.exponentialRampToValueAtTime(f0,t+0.045);
+      const bg1=actx.createGain(); bg1.gain.setValueAtTime(0.0001,t);
+      bg1.gain.exponentialRampToValueAtTime(0.23,t+0.004); bg1.gain.exponentialRampToValueAtTime(0.0006,t+0.10);
+      b1.connect(bg1).connect(master); b1.start(t); b1.stop(t+0.11);
+      const b2=actx.createOscillator(); b2.type='sine'; b2.frequency.value=f0*0.5;
+      const bg2=actx.createGain(); bg2.gain.setValueAtTime(0.0001,t);
+      bg2.gain.exponentialRampToValueAtTime(0.12,t+0.006); bg2.gain.exponentialRampToValueAtTime(0.0005,t+0.12);
+      b2.connect(bg2).connect(master); b2.start(t); b2.stop(t+0.13);
+      // (3) 우디 레조넌스: 밴드패스 노이즈로 살짝 '통' 울림
+      const rn=(sr*0.06)|0, rbuf=actx.createBuffer(1,rn,sr), rd=rbuf.getChannelData(0);
+      for(let i=0;i<rn;i++) rd[i]=(Math.random()*2-1)*Math.pow(1-i/rn,2.2);
+      const rsrc=actx.createBufferSource(); rsrc.buffer=rbuf;
+      const bp=actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=300+Math.random()*70; bp.Q.value=6.5;
+      const rg=actx.createGain(); rg.gain.value=0.055;
+      rsrc.connect(bp).connect(rg).connect(master); rsrc.start(t);
     }catch(e){}
   }
   document.addEventListener('pointerdown', e=>{ if(e.target.closest('.key, .btn, .dexchip, .dexcell.got')) uiClick(); }, {passive:true});
