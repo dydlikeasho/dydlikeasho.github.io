@@ -473,33 +473,23 @@
       if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
       if(actx.state==='suspended') actx.resume();
       const t=actx.currentTime, sr=actx.sampleRate;
-      const master=actx.createGain(); master.gain.value=0.95; master.connect(actx.destination);
-      // (1) 스템 클릭: 짧고 부드러운 노이즈(로우패스) — 상단 '독'
-      const cn=(sr*0.022)|0, cbuf=actx.createBuffer(1,cn,sr), cd=cbuf.getChannelData(0);
-      for(let i=0;i<cn;i++) cd[i]=(Math.random()*2-1)*Math.pow(1-i/cn,4);
-      const csrc=actx.createBufferSource(); csrc.buffer=cbuf;
-      const clp=actx.createBiquadFilter(); clp.type='lowpass'; clp.frequency.value=950+Math.random()*350; clp.Q.value=0.5;
-      const cg=actx.createGain(); cg.gain.value=0.075;
-      csrc.connect(clp).connect(cg).connect(master); csrc.start(t);
-      // (2) 도독 바디: 깊은 저음 두 파트(빠른 어택→감쇠) — 몽돌/조약돌 특유 thock
-      const f0=118+Math.random()*24;
-      const b1=actx.createOscillator(); b1.type='triangle';
-      b1.frequency.setValueAtTime(f0*1.7,t); b1.frequency.exponentialRampToValueAtTime(f0,t+0.045);
-      const bg1=actx.createGain(); bg1.gain.setValueAtTime(0.0001,t);
-      bg1.gain.exponentialRampToValueAtTime(0.23,t+0.004); bg1.gain.exponentialRampToValueAtTime(0.0006,t+0.10);
-      b1.connect(bg1).connect(master); b1.start(t); b1.stop(t+0.11);
-      const b2=actx.createOscillator(); b2.type='sine'; b2.frequency.value=f0*0.5;
-      const bg2=actx.createGain(); bg2.gain.setValueAtTime(0.0001,t);
-      bg2.gain.exponentialRampToValueAtTime(0.12,t+0.006); bg2.gain.exponentialRampToValueAtTime(0.0005,t+0.12);
-      b2.connect(bg2).connect(master); b2.start(t); b2.stop(t+0.13);
-      // (3) 우디 레조넌스: 밴드패스 노이즈로 살짝 '통' 울림
-      const rn=(sr*0.06)|0, rbuf=actx.createBuffer(1,rn,sr), rd=rbuf.getChannelData(0);
-      for(let i=0;i<rn;i++) rd[i]=(Math.random()*2-1)*Math.pow(1-i/rn,2.2);
-      const rsrc=actx.createBufferSource(); rsrc.buffer=rbuf;
-      const bp=actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=300+Math.random()*70; bp.Q.value=6.5;
-      const rg=actx.createGain(); rg.gain.value=0.055;
-      rsrc.connect(bp).connect(rg).connect(master); rsrc.start(t);
+      // 짧은 저음 바디 '툭' — 울림 없이 빠르게 끊기는 드라이 사운드
+      const osc=actx.createOscillator(); osc.type='triangle';
+      const f=160+Math.random()*20; osc.frequency.setValueAtTime(f,t);
+      const g=actx.createGain();
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.2,t+0.003);
+      g.gain.exponentialRampToValueAtTime(0.0004,t+0.038);
+      osc.connect(g).connect(actx.destination); osc.start(t); osc.stop(t+0.045);
+      // 아주 짧은 소프트 클릭(상단 't')
+      const cn=(sr*0.011)|0, buf=actx.createBuffer(1,cn,sr), d=buf.getChannelData(0);
+      for(let i=0;i<cn;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/cn,5);
+      const src=actx.createBufferSource(); src.buffer=buf;
+      const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=1100; lp.Q.value=0.5;
+      const cg=actx.createGain(); cg.gain.value=0.06;
+      src.connect(lp).connect(cg).connect(actx.destination); src.start(t);
     }catch(e){}
+    try{ navigator.vibrate && navigator.vibrate(6); }catch(e){}   // 안드로이드 미세 햅틱
   }
   document.addEventListener('pointerdown', e=>{ if(e.target.closest('.key, .btn, .dexchip, .dexcell.got')) uiClick(); }, {passive:true});
 
