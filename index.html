@@ -466,6 +466,28 @@
     state.selected=new Set(ids); syncTerm();
   }
 
+  /* ---- 버튼 효과음: 부드러운 키보드 '톡' (영상 위 조작 .unmute 엔 소리 없음) ---- */
+  let actx;
+  function uiClick(){
+    try{
+      if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
+      if(actx.state==='suspended') actx.resume();
+      const t=actx.currentTime, sr=actx.sampleRate, n=(sr*0.045)|0;
+      const buf=actx.createBuffer(1,n,sr), d=buf.getChannelData(0);
+      for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3.5);   // 짧게 감쇠하는 노이즈 = 키 눌림
+      const src=actx.createBufferSource(); src.buffer=buf;
+      const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=1300+Math.random()*400; lp.Q.value=0.6;
+      const g=actx.createGain(); g.gain.value=0.14;
+      src.connect(lp).connect(g).connect(actx.destination);
+      const osc=actx.createOscillator(); osc.type='triangle';   // 저음 '톡' 바디
+      const f=150+Math.random()*40; osc.frequency.setValueAtTime(f,t); osc.frequency.exponentialRampToValueAtTime(f*0.55,t+0.05);
+      const og=actx.createGain(); og.gain.setValueAtTime(0.11,t); og.gain.exponentialRampToValueAtTime(0.0008,t+0.055);
+      osc.connect(og).connect(actx.destination);
+      src.start(t); osc.start(t); osc.stop(t+0.06);
+    }catch(e){}
+  }
+  document.addEventListener('pointerdown', e=>{ if(e.target.closest('.key, .btn, .dexchip, .dexcell.got')) uiClick(); }, {passive:true});
+
   buildKeys();
   syncTerm();
   updateDexCounts();
