@@ -466,28 +466,29 @@
     state.selected=new Set(ids); syncTerm();
   }
 
-  /* ---- 버튼 효과음: 부드러운 키보드 '톡' (영상 위 조작 .unmute 엔 소리 없음) ---- */
+  /* ---- 버튼 효과음: 저소음 목새축/디렉돌축 느낌의 먹먹하고 둥근 '통' (영상 위 조작 .unmute 엔 소리 없음) ---- */
   let actx;
   function uiClick(){
     try{
       if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
       if(actx.state==='suspended') actx.resume();
       const t=actx.currentTime, sr=actx.sampleRate;
-      // 짧은 저음 바디 '툭' — 울림 없이 빠르게 끊기는 드라이 사운드
-      const osc=actx.createOscillator(); osc.type='triangle';
-      const f=160+Math.random()*20; osc.frequency.setValueAtTime(f,t);
+      // 저음 바디: 둥글고 먹먹하게 떨어지는 '통' — 클릭음 없이 낮은 대역만
+      const f=92+Math.random()*14;
+      const osc=actx.createOscillator(); osc.type='sine';
+      osc.frequency.setValueAtTime(f*1.35,t); osc.frequency.exponentialRampToValueAtTime(f,t+0.05);
       const g=actx.createGain();
       g.gain.setValueAtTime(0.0001,t);
-      g.gain.exponentialRampToValueAtTime(0.2,t+0.003);
-      g.gain.exponentialRampToValueAtTime(0.0004,t+0.038);
-      osc.connect(g).connect(actx.destination); osc.start(t); osc.stop(t+0.045);
-      // 아주 짧은 소프트 클릭(상단 't')
-      const cn=(sr*0.011)|0, buf=actx.createBuffer(1,cn,sr), d=buf.getChannelData(0);
-      for(let i=0;i<cn;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/cn,5);
+      g.gain.exponentialRampToValueAtTime(0.26,t+0.006);
+      g.gain.exponentialRampToValueAtTime(0.0004,t+0.095);
+      osc.connect(g).connect(actx.destination); osc.start(t); osc.stop(t+0.1);
+      // 저역 통노이즈: 딱딱한 클릭 대신 뭉툭한 바텀아웃 질감(로우패스로 고음 완전 차단)
+      const nn=(sr*0.03)|0, buf=actx.createBuffer(1,nn,sr), d=buf.getChannelData(0);
+      for(let i=0;i<nn;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/nn,2.5);
       const src=actx.createBufferSource(); src.buffer=buf;
-      const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=1100; lp.Q.value=0.5;
-      const cg=actx.createGain(); cg.gain.value=0.06;
-      src.connect(lp).connect(cg).connect(actx.destination); src.start(t);
+      const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=480; lp.Q.value=0.4;
+      const ng=actx.createGain(); ng.gain.value=0.05;
+      src.connect(lp).connect(ng).connect(actx.destination); src.start(t);
     }catch(e){}
     try{ navigator.vibrate && navigator.vibrate(6); }catch(e){}   // 안드로이드 미세 햅틱
   }
